@@ -19,6 +19,7 @@ import {
   RefreshControl,
   SectionList,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -76,7 +77,7 @@ export default function Index() {
             // borderWidth: 1,
             width: screenWidth / 3,
             position: "absolute",
-            bottom: "10%",
+            bottom: Platform.OS==='android' ? "5%" : '10%',
             right: 16,
             zIndex: 1,
           }}
@@ -94,7 +95,7 @@ export default function Index() {
             width: screenWidth / 2.2,
             position: "absolute",
             right: 16,
-            top: screenHeight / 5.5,
+            top: Platform.OS === 'ios' ? "20%" : '12%',
             borderRadius: 8,
             backgroundColor: "white",
             zIndex: 1,
@@ -102,6 +103,7 @@ export default function Index() {
             shadowOffset: { width: 0, height: 4 },
             shadowRadius: 8,
             shadowOpacity: 0.12,
+            elevation:8
           }}
         >
           <TouchableOpacity

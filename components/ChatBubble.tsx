@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, Image } from "react-native";
+import { View, Text, Dimensions, Image, Platform } from "react-native";
 import React from "react";
 import SvgVerified from "@/components/SvgVerified";
 import { Chat } from "@/api/apiCalls";
@@ -47,7 +47,7 @@ const ChatBubble : React.FC<BubbleProps> = ({ chat }) => {
           elevation:8,
           marginEnd:20,
           color:'#606060',
-          fontFamily:'Mulish',
+          fontFamily:Platform.OS === 'ios' ? 'Mulish' : 'Mulish-Medium',
           fontWeight:'600',
           lineHeight:18,
         }}

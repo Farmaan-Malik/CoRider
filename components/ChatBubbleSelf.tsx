@@ -1,4 +1,4 @@
-import { View, Text, Dimensions, Image } from "react-native";
+import { View, Text, Dimensions, Image, Platform } from "react-native";
 import React from "react";
 import { BubbleProps } from "./ChatBubble";
 
@@ -28,7 +28,7 @@ const ChatBubbleSelf: React.FC<BubbleProps> = ({ chat }) => {
           elevation:8,
           marginStart:52,
           color:'white',
-          fontFamily:'Mulish',
+          fontFamily:Platform.OS === 'ios' ? 'Mulish' : 'Mulish-Medium',
           fontWeight:'600',
           lineHeight:18,
         }}
