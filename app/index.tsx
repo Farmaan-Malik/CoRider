@@ -30,6 +30,7 @@ export default function Index() {
   const [data, setData] = useState<Chat[]>([]);
   const [currentPage, setPage] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [scrollToBottom, setScroll] = useState(true);
   const sectionListRef = useRef<SectionList>(null);
   const groupMessagesByDate = (messages: Chat[]) => {
     const grouped = messages.reduce((acc: any[], message: Chat) => {
@@ -52,25 +53,9 @@ export default function Index() {
     }
   };
   useEffect(() => {
-    apiCall();
-  }, []);
-  
-  useEffect(() => {
-    if (sectionListRef.current && groupedData.length > 0) {
-      const lastSectionIndex = groupedData.length - 1;
-      const lastItemIndex = groupedData[lastSectionIndex]?.data?.length - 1;
-  
-      if (lastSectionIndex >= 0 && lastItemIndex >= 0) {
-        setTimeout(() => {
-          sectionListRef.current?.scrollToLocation({
-            sectionIndex: lastSectionIndex,
-            itemIndex: lastItemIndex,
-            viewPosition: 1,
-            animated: true,
-          });
-        }, 100);
-      }
-    }
+    apiCall().then(() => {
+      setTimeout(()=>{setScroll(false)},2000)
+    });
   }, []);
 
   const onRefresh = () => {
@@ -92,7 +77,6 @@ export default function Index() {
       {showClip && (
         <View
           style={{
-            // borderWidth: 1,
             width: screenWidth / 3,
             position: "absolute",
             bottom: Platform.OS==='android' ? "5%" : '10%',
@@ -206,8 +190,8 @@ export default function Index() {
             )}
             getItemLayout={(data, index) => {
               return {
-                length: 200,
-                offset: (200 + 200) * index,
+                length: 80,
+                offset: (80 + 80) * index,
                 index,
               };
             }}
@@ -225,11 +209,12 @@ export default function Index() {
               const lastSectionIndex = groupedData.length - 1;
               const lastItemIndex = groupedData[lastSectionIndex]?.data?.length - 1;
               if (lastSectionIndex >= 0 && lastItemIndex >= 0) {
+               if(scrollToBottom){ 
                 sectionListRef.current?.scrollToLocation({
                   sectionIndex: lastSectionIndex,
                   itemIndex: lastItemIndex,
                   animated: true,
-                });
+                })}
               }
             }}
               refreshControl={
