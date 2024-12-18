@@ -54,6 +54,24 @@ export default function Index() {
   useEffect(() => {
     apiCall();
   }, []);
+  
+  useEffect(() => {
+    if (sectionListRef.current && groupedData.length > 0) {
+      const lastSectionIndex = groupedData.length - 1;
+      const lastItemIndex = groupedData[lastSectionIndex]?.data?.length - 1;
+  
+      if (lastSectionIndex >= 0 && lastItemIndex >= 0) {
+        setTimeout(() => {
+          sectionListRef.current?.scrollToLocation({
+            sectionIndex: lastSectionIndex,
+            itemIndex: lastItemIndex,
+            viewPosition: 1,
+            animated: true,
+          });
+        }, 100);
+      }
+    }
+  }, []);
 
   const onRefresh = () => {
     setPage((prev) => prev + 1);
@@ -173,48 +191,47 @@ export default function Index() {
         >
           {data && (
             <SectionList
-              ref={sectionListRef}
-              sections={groupedData}
-              keyExtractor={(item, index) => `${item.id}-${index}`}
-              renderItem={({ item }) =>
-                item.sender.self ? (
-                  <ChatBubbleSelf chat={item} />
-                ) : (
-                  <ChatBubble chat={item} />
-                )
+            ref={sectionListRef}
+            sections={groupedData}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
+            renderItem={({ item }) => (
+              item.sender.self ? <ChatBubbleSelf chat={item} /> : <ChatBubble chat={item} />
+            )}
+            renderSectionHeader={({ section: { title } }) => (
+              <View style={{ alignItems: "center", gap: 2, flexDirection: "row" }}>
+                <View style={{ borderWidth: StyleSheet.hairlineWidth, flex: 1, borderColor: "#B7B7B7", marginEnd: 12 }} />
+                <Text style={{ fontWeight: "400", color: "#B7B7B7", fontFamily: "Mulish", lineHeight: 18 }}>{title}</Text>
+                <View style={{ borderWidth: StyleSheet.hairlineWidth, flex: 1, borderColor: "#B7B7B7", marginStart: 12 }} />
+              </View>
+            )}
+            getItemLayout={(data, index) => {
+              return {
+                length: 200,
+                offset: (200 + 200) * index,
+                index,
+              };
+            }}
+            onScrollToIndexFailed={(info) => {
+              console.warn("Scroll to index failed:", info);
+              setTimeout(() => {
+                sectionListRef.current?.scrollToLocation({
+                  sectionIndex: info.highestMeasuredFrameIndex,
+                  itemIndex: info.index,
+                  animated: true,
+                });
+              }, 500);
+            }}
+            onContentSizeChange={() => {
+              const lastSectionIndex = groupedData.length - 1;
+              const lastItemIndex = groupedData[lastSectionIndex]?.data?.length - 1;
+              if (lastSectionIndex >= 0 && lastItemIndex >= 0) {
+                sectionListRef.current?.scrollToLocation({
+                  sectionIndex: lastSectionIndex,
+                  itemIndex: lastItemIndex,
+                  animated: true,
+                });
               }
-              renderSectionHeader={({ section: { title } }) => (
-                <View
-                  style={{ alignItems: "center", gap: 2, flexDirection: "row" }}
-                >
-                  <View
-                    style={{
-                      borderWidth: StyleSheet.hairlineWidth,
-                      flex: 1,
-                      borderColor: "#B7B7B7",
-                      marginEnd: 12,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontWeight: "400",
-                      color: "#B7B7B7",
-                      fontFamily: "Mulish",
-                      lineHeight: 18,
-                    }}
-                  >
-                    {title}
-                  </Text>
-                  <View
-                    style={{
-                      borderWidth: StyleSheet.hairlineWidth,
-                      flex: 1,
-                      borderColor: "#B7B7B7",
-                      marginStart: 12,
-                    }}
-                  />
-                </View>
-              )}
+            }}
               refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
               }
