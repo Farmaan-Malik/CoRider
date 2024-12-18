@@ -32,6 +32,18 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
   const [scrollToBottom, setScroll] = useState(true);
   const sectionListRef = useRef<SectionList>(null);
+  const [desiredIndex,setDesiredIndex]=useState('')
+  const [visibleIndex, setVisibleIndex] = useState(null);
+  const latestId = useRef(desiredIndex)
+
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+      const targetItem = viewableItems.find((item : any) => item.item.id === latestId.current);
+      if (targetItem) {
+        setVisibleIndex(targetItem.index);
+        apiCall()
+      }
+  }).current;
+
   const groupMessagesByDate = (messages: Chat[]) => {
     const grouped = messages.reduce((acc: any[], message: Chat) => {
       const date = dayjs(message.time).format("MMMM DD, YYYY");
@@ -45,25 +57,24 @@ export default function Index() {
     }, []);
     return grouped;
   };
+  useEffect(() => {
+    latestId.current = desiredIndex;
+  }, [desiredIndex]);
   const groupedData = groupMessagesByDate(data);
   const apiCall = async () => {
     const chat = await getTexts(currentPage);
     if (chat) {
+      setDesiredIndex(chat[0].id)
+
       setData((prev) => [...chat,...prev,]);
+
     }
   };
   useEffect(() => {
     apiCall().then(() => {
-      setTimeout(()=>{setScroll(false)},2000)
+      setTimeout(()=>{setScroll(false)},500)
     });
   }, []);
-
-  const onRefresh = () => {
-    setPage((prev) => prev + 1);
-    setRefreshing(true);
-    apiCall();
-    setRefreshing(false);
-  };
 
   return (
     <SafeAreaView
@@ -177,6 +188,8 @@ export default function Index() {
             <SectionList
             ref={sectionListRef}
             sections={groupedData}
+            viewabilityConfig={{itemVisiblePercentThreshold:5}}
+            onViewableItemsChanged={onViewableItemsChanged}
             keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={({ item }) => (
               item.sender.self ? <ChatBubbleSelf chat={item} /> : <ChatBubble chat={item} />
@@ -201,7 +214,8 @@ export default function Index() {
                 sectionListRef.current?.scrollToLocation({
                   sectionIndex: info.highestMeasuredFrameIndex,
                   itemIndex: info.index,
-                  animated: true,
+                  // animated: false,
+                  
                 });
               }, 500);
             }}
@@ -213,17 +227,14 @@ export default function Index() {
                 sectionListRef.current?.scrollToLocation({
                   sectionIndex: lastSectionIndex,
                   itemIndex: lastItemIndex,
-                  animated: true,
+                  animated: false,
                 })}
               }
             }}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
+
               contentContainerStyle={{
                 paddingBottom: 16,
               }}
-              onEndReachedThreshold={0.1}
             />
           )}
           <View
